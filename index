@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Speed Math Trainer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+    .app {
+      width: 100%;
+      max-width: 700px;
+      padding: 24px;
+      border-radius: 16px;
+      background: #020617;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      border: 1px solid #1f2937;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.6rem;
+      color: #f9fafb;
+    }
+    .subtitle {
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+    .top-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .pill {
+      flex: 1;
+      min-width: 140px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: #020617;
+      border: 1px solid #1f2937;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+    .pill-label {
+      color: #9ca3af;
+    }
+    .pill-value {
+      font-weight: 600;
+      color: #f9fafb;
+    }
+    .pill.highlight {
+      border-color: #22c55e;
+    }
+
+    .question-card {
+      padding: 20px 18px;
+      border-radius: 16px;
+      background: radial-gradient(circle at top, #1e293b, #020617);
+      border: 1px solid #1f2937;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .question-text {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-align: center;
+    }
+    .question-text span {
+      display: inline-block;
+      min-width: 40px;
+    }
+    .controls-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    input[type="number"] {
+      width: 120px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      background: #020617;
+      color: #f9fafb;
+      font-size: 1rem;
+      text-align: center;
+    }
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #22c55e;
+      box-shadow: 0 0 0 1px #22c55e33;
+    }
+    button {
+      border: none;
+      cursor: pointer;
+      padding: 9px 16px;
+      border-radius: 999px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(to right, #22c55e, #16a34a);
+      color: #022c22;
+      box-shadow: 0 10px 25px rgba(34, 197, 94, 0.35);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: default;
+      box-shadow: none;
+    }
+    .btn-primary:not(:disabled):active {
+      transform: translateY(1px);
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.35);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: #9ca3af;
+      border: 1px solid #374151;
+    }
+    .btn-ghost:hover {
+      background: #020617;
+    }
+
+    .segments {
+      margin-top: 10px;
+      border-radius: 12px;
+      border: 1px solid #1f2937;
+      overflow: hidden;
+    }
+    .segments-header {
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      background: #020617;
+      border-bottom: 1px solid #1f2937;
+      color: #9ca3af;
+      display: flex;
+      justify-content: space-between;
+    }
+    .segments-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      background: #020617;
+    }
+    .segment-cell {
+      padding: 8px 6px;
+      text-align: center;
+      border-right: 1px solid #111827;
+      border-top: 1px solid #0b1120;
+      font-size: 0.75rem;
+    }
+    .segment-cell:last-child {
+      border-right: none;
+    }
+    .segment-label {
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+    .segment-value {
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+    .segment-active {
+      background: rgba(34, 197, 94, 0.08);
+      border-top-color: #22c55e33;
+    }
+
+    .summary {
+      margin-top: 18px;
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+    .summary strong {
+      color: #f9fafb;
+    }
+
+    @media (max-width: 600px) {
+      .question-text {
+        font-size: 1.8rem;
+      }
+      .segments-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Speed Math Trainer</h1>
+    <div class="subtitle">
+      2 minutes of rapid-fire addition & subtraction within 0–100.
+      Accuracy tracked in 20-second segments.
+    </div>
+
+    <div class="top-row">
+      <div class="pill highlight">
+        <div class="pill-label">Time left</div>
+        <div class="pill-value" id="time-left">02:00</div>
+      </div>
+      <div class="pill">
+        <div class="pill-label">Total correct</div>
+        <div class="pill-value" id="total-correct">0</div>
+      </div>
+      <div class="pill">
+        <div class="pill-label">Total attempted</div>
+        <div class="pill-value" id="total-attempted">0</div>
+      </div>
+      <div class="pill">
+        <div class="pill-label">Overall accuracy</div>
+        <div class="pill-value" id="overall-accuracy">0%</div>
+      </div>
+    </div>
+
+    <div class="question-card">
+      <div class="question-text" id="question-text">
+        <span>–</span> <span>?</span> <span>–</span>
+      </div>
+      <div class="controls-row">
+        <input
+          type="number"
+          id="answer-input"
+          autocomplete="off"
+          placeholder="Your answer"
+          disabled
+        />
+        <button id="submit-btn" class="btn-primary" disabled>Submit ↵</button>
+        <button id="start-btn" class="btn-ghost">Start 2-minute drill</button>
+      </div>
+    </div>
+
+    <div class="segments">
+      <div class="segments-header">
+        <span>Segment breakdown (20s each)</span>
+        <span id="segment-indicator">Segment 1 / 6</span>
+      </div>
+      <div class="segments-grid" id="segments-grid">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+
+    <div class="summary" id="summary-text">
+      Press <strong>“Start 2-minute drill”</strong> to begin. Use the Enter key to submit answers quickly.
+    </div>
+  </div>
+
+  <script>
+    const TOTAL_DURATION = 120; // seconds
+    const SEGMENT_DURATION = 20; // seconds
+    const NUM_SEGMENTS = TOTAL_DURATION / SEGMENT_DURATION;
+
+    const timeLeftEl = document.getElementById("time-left");
+    const totalCorrectEl = document.getElementById("total-correct");
+    const totalAttemptedEl = document.getElementById("total-attempted");
+    const overallAccuracyEl = document.getElementById("overall-accuracy");
+    const questionTextEl = document.getElementById("question-text");
+    const answerInputEl = document.getElementById("answer-input");
+    const submitBtn = document.getElementById("submit-btn");
+    const startBtn = document.getElementById("start-btn");
+    const segmentsGridEl = document.getElementById("segments-grid");
+    const segmentIndicatorEl = document.getElementById("segment-indicator");
+    const summaryTextEl = document.getElementById("summary-text");
+
+    let timerId = null;
+    let timeLeft = TOTAL_DURATION;
+    let elapsed = 0;
+    let currentSegmentIndex = 0;
+
+    let currentAnswer = null;
+    let isRunning = false;
+
+    const segments = Array.from({ length: NUM_SEGMENTS }, () => ({
+      correct: 0,
+      total: 0,
+    }));
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+    }
+
+    function generateQuestion() {
+      // Addition or subtraction with result between 0 and 100
+      const isAdd = Math.random() < 0.5;
+      let a, b, op;
+
+      if (isAdd) {
+        op = "+";
+        do {
+          a = Math.floor(Math.random() * 101); // 0–100
+          b = Math.floor(Math.random() * 101);
+        } while (a + b > 100);
+        currentAnswer = a + b;
+      } else {
+        op = "−";
+        a = Math.floor(Math.random() * 101);
+        b = Math.floor(Math.random() * (a + 1)); // ensure a - b >= 0
+        currentAnswer = a - b;
+      }
+
+      questionTextEl.innerHTML = `
+        <span>${a}</span>
+        <span>${op}</span>
+        <span>${b}</span>
+      `;
+    }
+
+    function updateTopStats() {
+      const totalCorrect = segments.reduce((s, seg) => s + seg.correct, 0);
+      const totalAttempted = segments.reduce((s, seg) => s + seg.total, 0);
+      const accuracy = totalAttempted
+        ? ((totalCorrect / totalAttempted) * 100).toFixed(1)
+        : "0.0";
+
+      totalCorrectEl.textContent = totalCorrect;
+      totalAttemptedEl.textContent = totalAttempted;
+      overallAccuracyEl.textContent = `${accuracy}%`;
+    }
+
+    function buildSegmentsGrid() {
+      segmentsGridEl.innerHTML = "";
+      for (let i = 0; i < NUM_SEGMENTS; i++) {
+        const cell = document.createElement("div");
+        cell.className =
+          "segment-cell" + (i === currentSegmentIndex ? " segment-active" : "");
+        cell.dataset.index = i;
+
+        const seg = segments[i];
+        const accuracy = seg.total
+          ? Math.round((seg.correct / seg.total) * 100)
+          : 0;
+
+        cell.innerHTML = `
+          <div class="segment-label">${i * 20}-${(i + 1) * 20}s</div>
+          <div class="segment-value">${seg.correct}/${seg.total}</div>
+          <div class="segment-label">${accuracy}%</div>
+        `;
+        segmentsGridEl.appendChild(cell);
+      }
+    }
+
+    function updateSegmentsGrid() {
+      const cells = segmentsGridEl.children;
+      for (let i = 0; i < cells.length; i++) {
+        const seg = segments[i];
+        const accuracy = seg.total
+          ? Math.round((seg.correct / seg.total) * 100)
+          : 0;
+        const cell = cells[i];
+        cell.classList.toggle("segment-active", i === currentSegmentIndex);
+        cell.innerHTML = `
+          <div class="segment-label">${i * 20}-${(i + 1) * 20}s</div>
+          <div class="segment-value">${seg.correct}/${seg.total}</div>
+          <div class="segment-label">${accuracy}%</div>
+        `;
+      }
+    }
+
+    function startDrill() {
+      // Reset state
+      for (let i = 0; i < NUM_SEGMENTS; i++) {
+        segments[i].correct = 0;
+        segments[i].total = 0;
+      }
+      timeLeft = TOTAL_DURATION;
+      elapsed = 0;
+      currentSegmentIndex = 0;
+      isRunning = true;
+
+      timeLeftEl.textContent = formatTime(timeLeft);
+      segmentIndicatorEl.textContent = `Segment 1 / ${NUM_SEGMENTS}`;
+      summaryTextEl.textContent =
+        "Drill running. Answer as many questions as you can in 2 minutes.";
+
+      updateTopStats();
+      buildSegmentsGrid();
+      generateQuestion();
+
+      answerInputEl.disabled = false;
+      submitBtn.disabled = false;
+      startBtn.disabled = true;
+      answerInputEl.value = "";
+      answerInputEl.focus();
+
+      if (timerId) clearInterval(timerId);
+      timerId = setInterval(tick, 1000);
+    }
+
+    function endDrill() {
+      isRunning = false;
+      clearInterval(timerId);
+      timerId = null;
+      answerInputEl.disabled = true;
+      submitBtn.disabled = true;
+      startBtn.disabled = false;
+
+      const totalCorrect = segments.reduce((s, seg) => s + seg.correct, 0);
+      const totalAttempted = segments.reduce((s, seg) => s + seg.total, 0);
+      const accuracy = totalAttempted
+        ? ((totalCorrect / totalAttempted) * 100).toFixed(1)
+        : "0.0";
+
+      summaryTextEl.innerHTML = `
+        Time's up! You answered <strong>${totalCorrect}</strong> out of
+        <strong>${totalAttempted}</strong> correctly
+        (${accuracy}% accuracy). Click “Start 2-minute drill” to try again.
+      `;
+    }
+
+    function tick() {
+      if (!isRunning) return;
+
+      elapsed++;
+      timeLeft--;
+
+      if (timeLeft < 0) {
+        timeLeft = 0;
+      }
+
+      // Update segment based on elapsed time
+      const newSegmentIndex = Math.min(
+        Math.floor(elapsed / SEGMENT_DURATION),
+        NUM_SEGMENTS - 1
+      );
+      if (newSegmentIndex !== currentSegmentIndex) {
+        currentSegmentIndex = newSegmentIndex;
+        segmentIndicatorEl.textContent = `Segment ${
+          currentSegmentIndex + 1
+        } / ${NUM_SEGMENTS}`;
+      }
+
+      timeLeftEl.textContent = formatTime(timeLeft);
+      updateSegmentsGrid();
+
+      if (timeLeft <= 0) {
+        endDrill();
+      }
+    }
+
+    function handleSubmit() {
+      if (!isRunning || timeLeft <= 0) return;
+      const raw = answerInputEl.value.trim();
+      if (raw === "") return;
+
+      const userAnswer = Number(raw);
+      if (Number.isNaN(userAnswer)) {
+        answerInputEl.value = "";
+        return;
+      }
+
+      const seg = segments[currentSegmentIndex];
+      seg.total += 1;
+      if (userAnswer === currentAnswer) seg.correct += 1;
+
+      updateTopStats();
+      updateSegmentsGrid();
+
+      answerInputEl.value = "";
+      generateQuestion();
+      answerInputEl.focus();
+    }
+
+    // Event listeners
+    startBtn.addEventListener("click", startDrill);
+    submitBtn.addEventListener("click", handleSubmit);
+    answerInputEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleSubmit();
+      }
+    });
+
+    // Initial grid render
+    buildSegmentsGrid();
+  </script>
+</body>
+</html>
