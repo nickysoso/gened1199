@@ -195,6 +195,10 @@
       color: #f9fafb;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
     @media (max-width: 600px) {
       .question-text {
         font-size: 1.8rem;
@@ -208,27 +212,24 @@
 <body>
   <div class="app">
     <h1>Speed Math Trainer</h1>
-    <div class="subtitle">
-      2 minutes of rapid-fire addition & subtraction within 0–100.
-      Accuracy tracked in 20-second segments.
-    </div>
 
     <div class="top-row">
       <div class="pill highlight">
         <div class="pill-label">Time left</div>
         <div class="pill-value" id="time-left">02:00</div>
       </div>
-      <div class="pill">
+      <!-- These three pills are hidden during the drill -->
+      <div class="pill hidden" id="pill-total-correct">
         <div class="pill-label">Total correct</div>
         <div class="pill-value" id="total-correct">0</div>
       </div>
-      <div class="pill">
+      <div class="pill hidden" id="pill-total-attempted">
         <div class="pill-label">Total attempted</div>
         <div class="pill-value" id="total-attempted">0</div>
       </div>
-      <div class="pill">
+      <div class="pill hidden" id="pill-overall-accuracy">
         <div class="pill-label">Overall accuracy</div>
-        <div class="pill-value" id="overall-accuracy">0%</div>
+        <div class="pill-value" id="overall-accuracy">0%</</div>
       </div>
     </div>
 
@@ -249,7 +250,8 @@
       </div>
     </div>
 
-    <div class="segments">
+    <!-- Segment details are hidden during drill -->
+    <div class="segments hidden" id="segments-container">
       <div class="segments-header">
         <span>Segment breakdown (20s each)</span>
         <span id="segment-indicator">Segment 1 / 6</span>
@@ -279,7 +281,12 @@
     const startBtn = document.getElementById("start-btn");
     const segmentsGridEl = document.getElementById("segments-grid");
     const segmentIndicatorEl = document.getElementById("segment-indicator");
+    const segmentsContainerEl = document.getElementById("segments-container");
     const summaryTextEl = document.getElementById("summary-text");
+
+    const pillTotalCorrect = document.getElementById("pill-total-correct");
+    const pillTotalAttempted = document.getElementById("pill-total-attempted");
+    const pillOverallAccuracy = document.getElementById("pill-overall-accuracy");
 
     let timerId = null;
     let timeLeft = TOTAL_DURATION;
@@ -377,6 +384,14 @@
       }
     }
 
+    function setResultsVisible(visible) {
+      const method = visible ? "remove" : "add";
+      pillTotalCorrect.classList[method]("hidden");
+      pillTotalAttempted.classList[method]("hidden");
+      pillOverallAccuracy.classList[method]("hidden");
+      segmentsContainerEl.classList[method]("hidden");
+    }
+
     function startDrill() {
       // Reset state
       for (let i = 0; i < NUM_SEGMENTS; i++) {
@@ -397,6 +412,9 @@
       buildSegmentsGrid();
       generateQuestion();
 
+      // Hide results during the run
+      setResultsVisible(false);
+
       answerInputEl.disabled = false;
       submitBtn.disabled = false;
       startBtn.disabled = true;
@@ -414,6 +432,10 @@
       answerInputEl.disabled = true;
       submitBtn.disabled = true;
       startBtn.disabled = false;
+
+      updateTopStats();
+      updateSegmentsGrid();
+      setResultsVisible(true); // reveal stats now
 
       const totalCorrect = segments.reduce((s, seg) => s + seg.correct, 0);
       const totalAttempted = segments.reduce((s, seg) => s + seg.total, 0);
@@ -451,7 +473,6 @@
       }
 
       timeLeftEl.textContent = formatTime(timeLeft);
-      updateSegmentsGrid();
 
       if (timeLeft <= 0) {
         endDrill();
@@ -473,9 +494,6 @@
       seg.total += 1;
       if (userAnswer === currentAnswer) seg.correct += 1;
 
-      updateTopStats();
-      updateSegmentsGrid();
-
       answerInputEl.value = "";
       generateQuestion();
       answerInputEl.focus();
@@ -491,8 +509,9 @@
       }
     });
 
-    // Initial grid render
+    // Initial grid render (hidden but ready)
     buildSegmentsGrid();
+    setResultsVisible(false);
   </script>
 </body>
 </html>
